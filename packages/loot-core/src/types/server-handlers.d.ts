@@ -222,6 +222,8 @@ export interface ServerHandlers {
 
   'gocardless-status': () => Promise<{ configured: boolean }>;
 
+  'plaid-status': () => Promise<{ configured: boolean }>;
+
   'simplefin-status': () => Promise<{ configured: boolean }>;
 
   'simplefin-accounts': () => Promise<{ accounts: SimpleFinAccount[] }>;

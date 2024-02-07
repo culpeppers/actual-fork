@@ -8,6 +8,7 @@ import type {
 import type { RuleEntity } from '../../types/models/rule';
 import type { EmptyObject, StripNever } from '../../types/util';
 import type * as constants from '../constants';
+
 export type ModalType = keyof FinanceModals;
 
 export type OptionlessModal = {
@@ -69,6 +70,9 @@ type FinanceModals = {
     onSuccess: () => void;
   };
   'simplefin-init': {
+    onSuccess: () => void;
+  };
+  'plaid-init': {
     onSuccess: () => void;
   };
 

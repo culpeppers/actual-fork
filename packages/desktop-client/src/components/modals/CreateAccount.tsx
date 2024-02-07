@@ -8,6 +8,7 @@ import { useActions } from '../../hooks/useActions';
 import { useFeatureFlag } from '../../hooks/useFeatureFlag';
 import { useGoCardlessStatus } from '../../hooks/useGoCardlessStatus';
 import { useSimpleFinStatus } from '../../hooks/useSimpleFinStatus';
+import { usePlaidStatus } from '../../hooks/usePlaidStatus';
 import { type SyncServerStatus } from '../../hooks/useSyncServerStatus';
 import { theme } from '../../style';
 import { type CommonModalProps } from '../../types/modals';
@@ -34,6 +35,8 @@ export function CreateAccount({
     useState(null);
   const [isSimpleFinSetupComplete, setIsSimpleFinSetupComplete] =
     useState(null);
+  const [isPlaidSetupComplete, setIsPlaidSetupComplete] =
+    useState(null);
 
   const onConnectGoCardless = () => {
     if (!isGoCardlessSetupComplete) {
@@ -48,6 +51,10 @@ export function CreateAccount({
         upgradingAccountId,
       });
     }
+  };
+
+  const onConnectPlaid = () => {
+    onPlaidInit();
   };
 
   const onConnectSimpleFin = async () => {
@@ -104,6 +111,12 @@ export function CreateAccount({
     });
   };
 
+  const onPlaidInit = () => {
+    actions.pushModal('plaid-init', {
+      onSuccess: () => setIsPlaidSetupComplete(true),
+    });
+  };
+
   const onCreateLocalAccount = () => {
     actions.pushModal('add-local-account');
   };
@@ -117,6 +130,11 @@ export function CreateAccount({
   useEffect(() => {
     setIsSimpleFinSetupComplete(configuredSimpleFin);
   }, [configuredSimpleFin]);
+
+  const { configuredPlaid } = usePlaidStatus();
+  useEffect(() => {
+    setIsPlaidSetupComplete(configuredPlaid);
+  }, [configuredPlaid]);
 
   let title = 'Add Account';
   const [loadingSimpleFinAccounts, setLoadingSimpleFinAccounts] =
@@ -211,6 +229,31 @@ export function CreateAccount({
                     </Text>
                   </>
                 )}
+                  <>
+                   <ButtonWithLoading
+                      disabled={syncServerStatus !== 'online'}
+                      loading={loadingSimpleFinAccounts}
+                      style={{
+                        marginTop: '18px',
+                        padding: '10px 0',
+                        fontSize: 15,
+                        fontWeight: 600,
+                        flex: 1,
+                      }}
+                      onClick={onConnectPlaid}
+                    >
+                      {isPlaidSetupComplete
+                        ? 'Link Account With Plaid'
+                        : 'Unlink Account From Plaid'}
+                    </ButtonWithLoading>
+                    <Text style={{ lineHeight: '1.4em', fontSize: 15 }}>
+                      <strong>
+                        Link a <u>North American</u> bank account
+                      </strong>{' '}
+                      to automatically download transactions. Plaid provides
+                      reliable, up-to-date information from hundreds of banks.
+                    </Text>
+                   </> 
               </>
             ) : (
               <>

@@ -29,6 +29,7 @@ import { ManageRulesModal } from './modals/ManageRulesModal';
 import { MergeUnusedPayees } from './modals/MergeUnusedPayees';
 import { Notes } from './modals/Notes';
 import { PlaidExternalMsg } from './modals/PlaidExternalMsg';
+import { PlaidInitialize } from './modals/PlaidInitialize';
 import { ReportBudgetSummary } from './modals/ReportBudgetSummary';
 import { RolloverBudgetSummary } from './modals/RolloverBudgetSummary';
 import { SelectLinkedAccounts } from './modals/SelectLinkedAccounts';
@@ -206,6 +207,14 @@ export function Modals() {
               onSuccess={options.onSuccess}
             />
           );
+
+        case 'plaid-init':
+          return (
+            <PlaidInitialize
+              modalProps={modalProps}
+              onSuccess={options.onSuccess}
+            />
+          )
 
         case 'gocardless-external-msg':
           return (

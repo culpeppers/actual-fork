@@ -1163,7 +1163,7 @@ handlers['gocardless-poll-web-token'] = async function ({
   });
 };
 
-handlers['gocardless-status'] = async function () {
+handlers['plaid-status'] = async function () {
   const userToken = await asyncStorage.getItem('user-token');
 
   if (!userToken) {
@@ -1172,6 +1172,38 @@ handlers['gocardless-status'] = async function () {
 
   return post(
     getServer().GOCARDLESS_SERVER + '/status',
+    {},
+    {
+      'X-ACTUAL-TOKEN': userToken,
+    },
+  );
+};
+
+handlers['plaid-status'] = async function () {
+  const userToken = await asyncStorage.getItem('user-token');
+
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+
+  return post(
+    getServer().PLAID_SERVER + '/status',
+    {},
+    {
+      'X-ACTUAL-TOKEN': userToken,
+    },
+  );
+};
+
+handlers['plaid-create-link-token'] = async function () {
+  const userToken = await asyncStorage.getItem('user-token');
+
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+
+  return post(
+    getServer().PLAID_SERVER + '/createlinktoken',
     {},
     {
       'X-ACTUAL-TOKEN': userToken,

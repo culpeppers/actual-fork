@@ -4925,6 +4925,7 @@ __metadata:
     node-jq: "npm:^4.0.1"
     npm-run-all: "npm:^4.1.3"
     prettier: "npm:3.2.4"
+    react-plaid-link: "npm:^3.5.1"
     react-refresh: "npm:^0.14.0"
     source-map-support: "npm:^0.5.21"
     typescript: "npm:^5.0.2"
@@ -13921,6 +13922,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-plaid-link@npm:^3.5.1":
+  version: 3.5.1
+  resolution: "react-plaid-link@npm:3.5.1"
+  dependencies:
+    prop-types: "npm:^15.7.2"
+    react-script-hook: "npm:^1.6.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 963c40a6ac3cfe31ec0f256e586246c79e2525c00ec211036962fbf7b1adb971131e322a82c135ba12d1ee83d824af37d41f06de75acab2e7a6ccf2f8093d636
+  languageName: node
+  linkType: hard
+
 "react-redux@npm:7.2.1":
   version: 7.2.1
   resolution: "react-redux@npm:7.2.1"
@@ -13982,6 +13996,16 @@ __metadata:
   peerDependencies:
     react: ">=16.8"
   checksum: a40d1ea78e3b5b3167ed6cbaf74b2e60592fd1822b9f94a2499933bf699130a81f669bc06bdf34f38489a96d31510848c21254a48e49038b18ecbf42993eaa34
+  languageName: node
+  linkType: hard
+
+"react-script-hook@npm:^1.6.0":
+  version: 1.7.2
+  resolution: "react-script-hook@npm:1.7.2"
+  peerDependencies:
+    react: ^16.8.6 || 17 - 18
+    react-dom: ^16.8.6 || 17 - 18
+  checksum: a9ed431997fa9df629bd3ec51302141173d8d1d77fa561127fa8fee088769af9af25f14b7e655715e3c9ee9b5fc161dfab413706d9ddbb72c577021959654482
   languageName: node
   linkType: hard
 

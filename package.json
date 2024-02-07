@@ -66,5 +66,8 @@
   "browserslist": [
     "electron 24.0",
     "defaults"
-  ]
+  ],
+  "dependencies": {
+    "react-plaid-link": "^3.5.1"
+  }
 }
