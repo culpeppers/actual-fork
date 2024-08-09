@@ -201,20 +201,22 @@ function getInitialMappings(transactions) {
   );
 
   const payeeField = key(
-    fields.find(
-      ([name]) =>
-        name !== dateField && name !== amountField && name !== categoryField,
-    ),
+    fields.find(([name]) => name.toLowerCase().includes('payee')) ||
+      fields.find(
+        ([name]) =>
+          name !== dateField && name !== amountField && name !== categoryField,
+      ),
   );
 
   const notesField = key(
-    fields.find(
-      ([name]) =>
-        name !== dateField &&
-        name !== amountField &&
-        name !== categoryField &&
-        name !== payeeField,
-    ),
+    fields.find(([name]) => name.toLowerCase().includes('notes')) ||
+      fields.find(
+        ([name]) =>
+          name !== dateField &&
+          name !== amountField &&
+          name !== categoryField &&
+          name !== payeeField,
+      ),
   );
 
   const inOutField = key(
@@ -1089,7 +1091,7 @@ export function ImportTransactions({ options }) {
     setTransactions(newTransactions);
   }
 
-  async function onImport() {
+  async function onImport(close) {
     setLoadingState('importing');
 
     const finalTransactions = [];
@@ -1206,6 +1208,7 @@ export function ImportTransactions({ options }) {
     if (onImported) {
       onImported(didChange);
     }
+    close();
   }
 
   const runImportPreviewCallback = useCallback(async () => {
@@ -1682,8 +1685,7 @@ export function ImportTransactions({ options }) {
                 }
                 isLoading={loadingState === 'importing'}
                 onPress={() => {
-                  onImport();
-                  close();
+                  onImport(close);
                 }}
               >
                 Import{' '}

@@ -61,9 +61,10 @@ import { styles, theme } from '../../style';
 import { AccountAutocomplete } from '../autocomplete/AccountAutocomplete';
 import { CategoryAutocomplete } from '../autocomplete/CategoryAutocomplete';
 import { PayeeAutocomplete } from '../autocomplete/PayeeAutocomplete';
-import { Button } from '../common/Button';
+import { Button } from '../common/Button2';
 import { Popover } from '../common/Popover';
 import { Text } from '../common/Text';
+import { Tooltip } from '../common/Tooltip';
 import { View } from '../common/View';
 import { getStatusProps } from '../schedules/StatusBadge';
 import { DateSelect } from '../select/DateSelect';
@@ -293,8 +294,15 @@ const TransactionHeader = memo(
             onSort('deposit', selectAscDesc(field, ascDesc, 'deposit', 'desc'))
           }
         />
-        {showBalance && <Cell value="Balance" width={103} textAlign="right" />}
-
+        {showBalance && (
+          <HeaderCell
+            value="Balance"
+            width={103}
+            alignItems="flex-end"
+            marginRight={-5}
+            id="balance"
+          />
+        )}
         {showCleared && (
           <HeaderCell
             value="✓"
@@ -438,6 +446,16 @@ function HeaderCell({
   icon,
   onClick,
 }) {
+  const style = {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    color: theme.tableHeaderText,
+    fontWeight: 300,
+    marginLeft,
+    marginRight,
+  };
+
   return (
     <CustomCell
       width={width}
@@ -448,29 +466,21 @@ function HeaderCell({
         borderTopWidth: 0,
         borderBottomWidth: 0,
       }}
-      unexposedContent={({ value: cellValue }) => (
-        <Button
-          type="bare"
-          onClick={onClick}
-          style={{
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            color: theme.tableHeaderText,
-            fontWeight: 300,
-            marginLeft,
-            marginRight,
-          }}
-        >
-          <UnexposedCellContent value={cellValue} />
-          {icon === 'asc' && (
-            <SvgArrowDown width={10} height={10} style={{ marginLeft: 5 }} />
-          )}
-          {icon === 'desc' && (
-            <SvgArrowUp width={10} height={10} style={{ marginLeft: 5 }} />
-          )}
-        </Button>
-      )}
+      unexposedContent={({ value: cellValue }) =>
+        onClick ? (
+          <Button variant="bare" onPress={onClick} style={style}>
+            <UnexposedCellContent value={cellValue} />
+            {icon === 'asc' && (
+              <SvgArrowDown width={10} height={10} style={{ marginLeft: 5 }} />
+            )}
+            {icon === 'desc' && (
+              <SvgArrowUp width={10} height={10} style={{ marginLeft: 5 }} />
+            )}
+          </Button>
+        ) : (
+          <Text style={style}>{cellValue}</Text>
+        )
+      }
     />
   );
 }
@@ -528,6 +538,7 @@ function PayeeCell({
   valueStyle,
   transaction,
   subtransactions,
+  importedPayee,
   isPreview,
   onEdit,
   onUpdate,
@@ -601,9 +612,30 @@ function PayeeCell({
               fontStyle: 'italic',
               fontWeight: 300,
               userSelect: 'none',
+              borderBottom: importedPayee
+                ? `1px dashed ${theme.pageTextSubdued}`
+                : 'none',
             }}
           >
-            {parentPayee}
+            {importedPayee ? (
+              <Tooltip
+                content={
+                  <View style={{ padding: 10 }}>
+                    <Text style={{ fontWeight: 'bold' }}>Imported Payee</Text>
+                    <Text style={{ fontWeight: 'normal' }}>
+                      {importedPayee}
+                    </Text>
+                  </View>
+                }
+                style={{ ...styles.tooltip, borderRadius: '0px 5px 5px 0px' }}
+                placement="bottom"
+                triggerProps={{ delay: 750 }}
+              >
+                {parentPayee}
+              </Tooltip>
+            ) : (
+              parentPayee
+            )}
           </Text>
         </View>
       </CellButton>
@@ -628,17 +660,48 @@ function PayeeCell({
         }
       }}
       formatter={() => getPayeePretty(transaction, payee, transferAccount)}
-      unexposedContent={props => (
-        <>
-          <PayeeIcons
-            transaction={transaction}
-            transferAccount={transferAccount}
-            onNavigateToTransferAccount={onNavigateToTransferAccount}
-            onNavigateToSchedule={onNavigateToSchedule}
+      unexposedContent={props => {
+        const payeeName = (
+          <UnexposedCellContent
+            {...props}
+            style={
+              importedPayee
+                ? { borderBottom: `1px dashed ${theme.pageTextSubdued}` }
+                : {}
+            }
           />
-          <UnexposedCellContent {...props} />
-        </>
-      )}
+        );
+
+        return (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <PayeeIcons
+              transaction={transaction}
+              transferAccount={transferAccount}
+              onNavigateToTransferAccount={onNavigateToTransferAccount}
+              onNavigateToSchedule={onNavigateToSchedule}
+            />
+            {importedPayee ? (
+              <Tooltip
+                content={
+                  <View style={{ padding: 10 }}>
+                    <Text style={{ fontWeight: 'bold' }}>Imported Payee</Text>
+                    <Text style={{ fontWeight: 'normal' }}>
+                      {importedPayee}
+                    </Text>
+                  </View>
+                }
+                style={{ ...styles.tooltip, borderRadius: '0px 5px 5px 0px' }}
+                placement="bottom"
+                triggerProps={{ delay: 750 }}
+              >
+                {payeeName}
+              </Tooltip>
+            ) : (
+              payeeName
+            )}
+          </div>
+        );
+      }}
     >
       {({
         onBlur,
@@ -647,28 +710,26 @@ function PayeeCell({
         onSave,
         shouldSaveFromKey,
         inputStyle,
-      }) => {
-        return (
-          <PayeeAutocomplete
-            payees={payees}
-            accounts={accounts}
-            value={payee?.id}
-            shouldSaveFromKey={shouldSaveFromKey}
-            inputProps={{
-              onBlur,
-              onKeyDown,
-              style: inputStyle,
-            }}
-            showManagePayees={true}
-            clearOnBlur={false}
-            focused={true}
-            onUpdate={(id, value) => onUpdate?.(value)}
-            onSelect={onSave}
-            onManagePayees={() => onManagePayees(payee?.id)}
-            menuPortalTarget={undefined}
-          />
-        );
-      }}
+      }) => (
+        <PayeeAutocomplete
+          payees={payees}
+          accounts={accounts}
+          value={payee?.id}
+          shouldSaveFromKey={shouldSaveFromKey}
+          inputProps={{
+            onBlur,
+            onKeyDown,
+            style: inputStyle,
+          }}
+          showManagePayees={true}
+          clearOnBlur={false}
+          focused={true}
+          onUpdate={(id, value) => onUpdate?.(value)}
+          onSelect={onSave}
+          onManagePayees={() => onManagePayees(payee?.id)}
+          menuPortalTarget={undefined}
+        />
+      )}
     </CustomCell>
   );
 }
@@ -686,22 +747,25 @@ function PayeeIcons({
       ? scheduleData.schedules.find(s => s.id === scheduleId)
       : null;
 
+  const buttonStyle = useMemo(
+    () => ({
+      marginLeft: -5,
+      marginRight: 2,
+      width: 23,
+      height: 23,
+      color: 'inherit',
+    }),
+    [],
+  );
+
+  const scheduleIconStyle = useMemo(() => ({ width: 13, height: 13 }), []);
+
+  const transferIconStyle = useMemo(() => ({ width: 10, height: 10 }), []);
+
   if (schedule == null && transferAccount == null) {
     // Neither a valid scheduled transaction nor a transfer.
     return null;
   }
-
-  const buttonStyle = {
-    marginLeft: -5,
-    marginRight: 2,
-    width: 23,
-    height: 23,
-    color: 'inherit',
-  };
-
-  const scheduleIconStyle = { width: 13, height: 13 };
-
-  const transferIconStyle = { width: 10, height: 10 };
 
   const recurring = schedule && schedule._date && !!schedule._date.frequency;
 
@@ -709,10 +773,10 @@ function PayeeIcons({
     <>
       {schedule && (
         <Button
-          type="bare"
+          variant="bare"
+          aria-label="See schedule details"
           style={buttonStyle}
-          onClick={e => {
-            e.stopPropagation();
+          onPress={() => {
             onNavigateToSchedule(scheduleId);
           }}
         >
@@ -725,11 +789,10 @@ function PayeeIcons({
       )}
       {transferAccount && (
         <Button
-          type="bare"
-          aria-label="Transfer"
+          variant="bare"
+          aria-label="See transfer account"
           style={buttonStyle}
-          onClick={e => {
-            e.stopPropagation();
+          onPress={() => {
             if (!isTemporaryId(transaction.id)) {
               onNavigateToTransferAccount(transferAccount.id);
             }
@@ -1510,18 +1573,18 @@ function TransactionError({
             </Text>
             <View style={{ flex: 1 }} />
             <Button
-              type="normal"
+              variant="normal"
               style={{ marginLeft: 15 }}
-              onClick={onDistributeRemainder}
+              onPress={onDistributeRemainder}
               data-testid="distribute-split-button"
-              disabled={!canDistributeRemainder}
+              isDisabled={!canDistributeRemainder}
             >
               Distribute
             </Button>
             <Button
-              type="primary"
+              variant="primary"
               style={{ marginLeft: 10, padding: '4px 10px' }}
-              onClick={onAddSplit}
+              onPress={onAddSplit}
               data-testid="add-split-button"
             >
               Add Split
@@ -1648,7 +1711,7 @@ function NewTransaction({
       >
         <Button
           style={{ marginRight: 10, padding: '4px 10px' }}
-          onClick={() => onClose()}
+          onPress={() => onClose()}
           data-testid="cancel-button"
         >
           Cancel
@@ -1665,9 +1728,9 @@ function NewTransaction({
           />
         ) : (
           <Button
-            type="primary"
+            variant="primary"
             style={{ padding: '4px 10px' }}
-            onClick={onAdd}
+            onPress={onAdd}
             data-testid="add-button"
           >
             Add
@@ -2439,9 +2502,9 @@ function notesTagFormatter(notes, onNotesTagClick) {
             return (
               <span key={`${validTag}${ti}`}>
                 <Button
-                  type="bare"
+                  variant="bare"
                   key={i}
-                  style={{
+                  style={({ isHovered }) => ({
                     display: 'inline-flex',
                     padding: '3px 7px',
                     borderRadius: 16,
@@ -2449,13 +2512,11 @@ function notesTagFormatter(notes, onNotesTagClick) {
                     backgroundColor: theme.noteTagBackground,
                     color: theme.noteTagText,
                     cursor: 'pointer',
-                  }}
-                  hoveredStyle={{
-                    backgroundColor: theme.noteTagBackgroundHover,
-                    color: theme.noteTagText,
-                  }}
-                  onClick={e => {
-                    e.stopPropagation();
+                    ...(isHovered
+                      ? { backgroundColor: theme.noteTagBackgroundHover }
+                      : {}),
+                  })}
+                  onPress={() => {
                     onNotesTagClick?.(validTag);
                   }}
                 >
